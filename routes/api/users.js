@@ -10,6 +10,7 @@ const router = express.Router();
 
 // Load input Validation
 const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 /**
  * @route GET api/users/test
@@ -71,12 +72,19 @@ router.post('/register', (req, res) => {
  * @access Public
  */
 router.post('/login', (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+
+  if (!isValid) {
+    errors.password = 'Password incorrect';
+    return res.status(400).json(errors);
+  }
   const { email, password } = req.body;
 
   // find the user by email
   User.findOne({ email }).then((user) => {
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      errors.email = 'Usern not found';
+      return res.status(404).json(errors);
     }
 
     // check password
