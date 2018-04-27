@@ -1,6 +1,6 @@
 const express = require('express');
 
-const port = 4050;
+const port = 4040;
 const mongoose = require('mongoose');
 const users = require('./routes/api/users');
 const profile = require('./routes/api/profile');
