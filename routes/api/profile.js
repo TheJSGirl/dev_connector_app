@@ -39,6 +39,25 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
     });
 });
 
+/**
+ * @route GET api/profile/all
+ * @desc Get all profiles
+ * @access Public
+ */
+router.get('/all', (req, res) => {
+  const errors = {};
+
+  Profile.find()
+    .populate('user', ['name', 'avatar'])
+    .then((profiles) => {
+      if (!profiles) {
+        errors.noprofile = 'There are no profiles';
+        return res.status(404).json(errors);
+      }
+      res.json(profiles);
+    })
+    .catch(err => res.status(404).json(err));
+});
 
 /**
  * @route GET api/profile/handle/:handle
@@ -79,7 +98,6 @@ router.get('/user/:user_id', (req, res) => {
     })
     .catch(err => res.status(404).json(err));
 });
-
 
 /**
  * @route POST api/profile
