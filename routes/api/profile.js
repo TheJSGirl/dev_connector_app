@@ -6,6 +6,9 @@ const router = express.Router();
 // Load profile model
 const Profile = require('../../models/Profile');
 
+// Load Validation
+const validateProfileInput = require('../../validation/profile');
+
 /**
  * @route GET api/profile/test
  * @desc Testes profile route
@@ -22,6 +25,7 @@ router.get('/test', (req, res) => res.json({ msg: 'Profile works' }));
 router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   const errors = {};
   Profile.findOne({ user: req.user.id })
+    .populate('user', ['name', 'avatar'])
     .then((profile) => {
       if (!profile) {
         errors.noprofile = 'There is no profile';
@@ -29,7 +33,10 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
       }
       res.status(200).json(profile);
     })
-    .catch(err => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      res.status(404).json(err);
+    });
 });
 
 /**
@@ -38,6 +45,13 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
  * @access Private
  */
 router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { errors, isValid } = validateProfileInput(req.body);
+
+  // check validation
+  if (!isValid) {
+    // Return any errors with 400 status
+    return res.status(400).json(errors);
+  }
   // Get fields
   const profileFields = {};
   profileFields.user = req.user.id;
@@ -58,7 +72,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
   if (req.body.youtube) profileFields.social.youtube = req.body.youtube;
   if (req.body.twitter) profileFields.social.twitter = req.body.twitter;
   if (req.body.facebook) profileFields.social.facebook = req.body.facebook;
-  if (req.body.linkedin) profileFields.social.linkedin = req.body.linkedin;
+  if (req.body.linkedIn) profileFields.social.linkedIn = req.body.linkedIn;
 
   Profile.findOne({ user: req.user.id }).then((profile) => {
     if (profile) {
