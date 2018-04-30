@@ -6,6 +6,9 @@ const router = express.Router();
 // Load profile model
 const Profile = require('../../models/Profile');
 
+// Load user model
+const User = require('../../models/User');
+
 // Load Validation
 const validateProfileInput = require('../../validation/profile');
 const validateExperienceInput = require('../../validation/experience');
@@ -199,7 +202,7 @@ router.post('/experience', passport.authenticate('jwt', { session: false }), (re
 });
 
 /**
- * @route GET api/profile/education
+ * @route POST api/profile/education
  * @desc Add education to profile
  * @access Private
  */
@@ -294,6 +297,22 @@ router.delete(
         console.log(err);
         res.json(err);
       });
+  },
+);
+
+/**
+ * @route DELETE api/profile
+ * @desc DELETE user and profile
+ * @access Private
+ */
+
+router.delete(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Profile.findOneAndRemove({ user: req.user.id }).then(() => {
+      User.findOneAndRemove({ _id: req.user.id }).then(() => res.json({ success: true }));
+    });
   },
 );
 module.exports = router;
